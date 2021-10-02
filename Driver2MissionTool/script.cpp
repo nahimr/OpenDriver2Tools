@@ -21,7 +21,7 @@ void addThread(Stack* stack, Thread* thread)
 {
     stack->threadOffsets[stack->nbThreads] = stack->nbOperations;
     stack->nbThreads++;
-    for (int i = stack->nbOperations; i < (stack->nbOperations + thread->offset); i++)
+    for (unsigned int i = stack->nbOperations; i < (stack->nbOperations + thread->offset); i++)
     {
         stack->operations[i] = thread->operations[i - stack->nbOperations];
     }

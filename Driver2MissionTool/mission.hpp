@@ -1,5 +1,10 @@
 #pragma once
 
+#include <map>
+#include <string>
+
+extern std::map<std::string, int> settingsFlags;
+
 #define MISSION_IDENT		(('D' << 24) | ('2' << 16) | ('M' << 8) | 'S' )
 
 typedef unsigned short u_short;
@@ -313,26 +318,3 @@ enum MR_FUNCTION_FLAGS
 {
 	FUNC_ProcessTarget = 0x4000020, // ProcessTarget(targetIndex)
 };
-
-// struct StringsStack {
-// 	u_int offset = 0;
-// 	u_short element = 0;
-// 	char* strings[64];
-//
-// 	u_int addString(const char* str) {
-// 		strings[element] = (char*)str;
-// 		element++;
-// 		offset += strlen(str) + 1;
-// 		return (offset - strlen(str) - 1);
-// 	}
-//
-// 	char* getString(u_short pos) {
-// 		return strings[pos];
-// 	}
-//
-// 	u_short getSize() {
-// 		return element;
-// 	}
-// 	// TODO: Make a function to return offset at pos of a string
-//
-// };
