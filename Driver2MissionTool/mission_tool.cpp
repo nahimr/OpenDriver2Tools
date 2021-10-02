@@ -123,11 +123,13 @@ MS_MISSION ParseSettings(xml_node<>* el, StringsStack* strings)
 MS_TARGET* ParseTargets(xml_node<>* element, StringsStack* strings)
 {
 	MS_TARGET* targets = static_cast<MS_TARGET*>(malloc(sizeof(MS_TARGET) * 16));
+	memset(targets, 0, sizeof(MS_TARGET) * 16);
 	xml_node<>* el = element->first_node();
-	for (int i = 0; i < 16; i++)
+
+	for (int i = 0; i < 16 && el; i++)
 	{
-		if (el == nullptr) break;
 		std::string name = el->name();
+		printf("%s\n", name.data());
 		// Parse Targets
 		if (name == "Car" || name == "Player2Start")
 		{
@@ -144,20 +146,21 @@ MS_TARGET* ParseTargets(xml_node<>* element, StringsStack* strings)
 			targets[i].car.flags = mapValues(split(el->first_attribute("flags")->value(), '|'));
 			targets[i].car.type = 0;
 
-			if (el->first_node("Chasing"))
+			xml_node<>* nel = el;
+			if (nel->first_node("Chasing"))
 			{
-				el = el->first_node("Chasing");
+				nel = nel->first_node("Chasing");
 				targets[i].car.type = 2;
-				targets[i].car.chasing.tooFarMessage = strings->getOffset(el->first_attribute("tooFarMessageStrId")->value());
-				targets[i].car.chasing.gettingFarMessage = strings->getOffset(el->first_attribute("gettingFarMessageStrId")->value());
-				targets[i].car.chasing.maxDamage = atoi(el->first_attribute("maxDamage")->value());
+				targets[i].car.chasing.tooFarMessage = strings->getOffset(nel->first_attribute("tooFarMessageStrId")->value());
+				targets[i].car.chasing.gettingFarMessage = strings->getOffset(nel->first_attribute("gettingFarMessageStrId")->value());
+				targets[i].car.chasing.maxDamage = atoi(nel->first_attribute("maxDamage")->value());
 			}
-			else if (el->first_node("Tailing"))
+			else if (nel->first_node("Tailing"))
 			{
-				el = el->first_node("Tailing");
+				nel = nel->first_node("Tailing");
 				targets[i].car.type = 1;
-				targets[i].car.tail.closeMessages = strings->getOffset(el->first_attribute("closeMessageStrId")->value());
-				targets[i].car.tail.farMessages = strings->getOffset(el->first_attribute("farMessageStrId")->value());
+				targets[i].car.tail.closeMessages = strings->getOffset(nel->first_attribute("closeMessageStrId")->value());
+				targets[i].car.tail.farMessages = strings->getOffset(nel->first_attribute("farMessageStrId")->value());
 			}
 		}
 		else if (name == "Point")
@@ -170,22 +173,23 @@ MS_TARGET* ParseTargets(xml_node<>* element, StringsStack* strings)
 			targets[i].point.posY = atoi(el->first_attribute("posY")->value());
 			targets[i].point.height = atoi(el->first_attribute("height")->value());
 			targets[i].point.radius = atoi(el->first_attribute("radius")->value());
-			targets[i].point.loseTailMessage = strings->getOffset(el->first_attribute("loseTailMessageStrId")->value());
+			targets[i].point.loseTailMessage = !el->first_attribute("loseTailMessage") ? -1 : strings->getOffset(el->first_attribute("loseTailMessage")->value());
 			targets[i].point.actionFlag = mapValues(split(el->first_attribute("flags")->value(), '|'));
 			targets[i].point.boatOffsetX = atoi(el->first_attribute("boatOffsetX")->value());
 			targets[i].point.boatOffsetZ = atoi(el->first_attribute("boatOffsetZ")->value());
 		}
 		else if (name == "Event")
 		{
-			
+			// TODO: Handle Event
 		}
 		else if (name == "MultiCar")
 		{
-			
+			// TODO: Handle MultiCar
 		}
 
-		el = element->next_sibling();
+		el = el->next_sibling();
 	}
+
 	return targets;
 }
 
@@ -207,7 +211,7 @@ void CreateMission(std::string &filename)
 	StringsStack* strings = ParseStrings(node = node->first_node());
 	MS_MISSION settings = ParseSettings(node = node->next_sibling(), strings);
 	MS_TARGET* targets = ParseTargets(node = node->next_sibling(), strings);
-	Stack stack = ParseScript(node = node->next_sibling());
+	//Stack stack = ParseScript(node = node->next_sibling());
 	
 	free(targets);
 }
