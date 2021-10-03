@@ -137,7 +137,7 @@ void FillTarget(int* ptr,
 			continue;
 		}
 		printf("%p", ptr);
-		std::string value = attr->value();
+		std::string value = attr->value() ? attr->value() : "";
 		int val = 0;
 
 		if (value_type == MAP_VALUES)
@@ -146,7 +146,7 @@ void FillTarget(int* ptr,
 		}
 		else if (value_type == STRING_OFFSET)
 		{
-			val = strings->getOffset(value);
+			val = value.empty() ? -1 : strings->getOffset(value);
 		}
 		else if (value_type == INTEGER)
 		{
@@ -154,7 +154,7 @@ void FillTarget(int* ptr,
 		}
 
 		*ptr = val;
-
+		assert(*ptr == val);
 		printf(", %d, %d, %s\n", *ptr, val, pair.second.data());
 		ptr++;
 	}
@@ -171,7 +171,7 @@ MS_TARGET* ParseTargets(xml_node<>* element, StringsStack* strings)
 	{
 		std::string name = el->name();
 		printf("%s\n", name.data());
-		int* ptr = (int*)(targets + i);
+		int* ptr = reinterpret_cast<int*>(targets + i);
 
 		if (name == "Car" || name == "Player2Start")
 		{
@@ -181,7 +181,7 @@ MS_TARGET* ParseTargets(xml_node<>* element, StringsStack* strings)
 			if (nel->first_node("Chasing"))
 			{
 				nel = nel->first_node("Chasing");
-
+				targets[i].car.type = 3;
 				FillTarget(ptr, carChasingProp, nel, strings);
 			}
 			else if (nel->first_node("Tailing"))
@@ -193,17 +193,7 @@ MS_TARGET* ParseTargets(xml_node<>* element, StringsStack* strings)
 		else if (name == "Point")
 		{
 			targets[i].type = Target_Point;
-			targets[i].target_flags = mapValues(split(el->first_attribute("targetFlags")->value(), '|'));
-			targets[i].display_flags = mapValues(split(el->first_attribute("displayFlags")->value(), '|'));
-			targets[i].point.posX = atoi(el->first_attribute("posX")->value());
-			targets[i].point.posZ = atoi(el->first_attribute("posZ")->value());
-			targets[i].point.posY = atoi(el->first_attribute("posY")->value());
-			targets[i].point.height = atoi(el->first_attribute("height")->value());
-			targets[i].point.radius = atoi(el->first_attribute("radius")->value());
-			targets[i].point.loseTailMessage = !el->first_attribute("loseTailMessage") ? -1 : strings->getOffset(el->first_attribute("loseTailMessage")->value());
-			targets[i].point.actionFlag = mapValues(split(el->first_attribute("flags")->value(), '|'));
-			targets[i].point.boatOffsetX = atoi(el->first_attribute("boatOffsetX")->value());
-			targets[i].point.boatOffsetZ = atoi(el->first_attribute("boatOffsetZ")->value());
+			FillTarget(ptr, pointTargetsProp, el, strings);
 		}
 		else if (name == "Event")
 		{
@@ -222,8 +212,11 @@ MS_TARGET* ParseTargets(xml_node<>* element, StringsStack* strings)
 
 Stack ParseScript(xml_node<>* element)
 {
-	printf("%s\n", element->name());
-	return Stack();
+	Stack stack;
+
+	
+	
+	return stack;
 }
 
 void CreateMission(std::string &filename)

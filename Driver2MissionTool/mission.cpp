@@ -1,6 +1,5 @@
 #include "mission.hpp"
 
-
 std::map<std::string, int> settingsFlags =
 {
 	// City
@@ -109,7 +108,6 @@ std::map<int, std::string> carTargetsProp =
 	{MAKE_VAR(10,MAP_VALUES), "flags"},
 	{MAKE_VAR(11,INTEGER), "cutscene"},
 	{MAKE_VAR(12,INTEGER), "maxDistance"},
-
 };
 
 std::map<int, std::string> carChasingProp =
@@ -123,4 +121,20 @@ std::map<int, std::string> carTailingProp =
 {
 	{MAKE_VAR(0,STRING_OFFSET), "closeMessage"},
 	{MAKE_VAR(1,STRING_OFFSET), "farMessage"},
+};
+
+std::map<int, std::string> pointTargetsProp =
+{
+	{MAKE_VAR(0,SKIP), "type"},
+	{MAKE_VAR(1,MAP_VALUES), "targetFlags"},
+	{MAKE_VAR(2,MAP_VALUES), "displayFlags"},
+	{MAKE_VAR(3,INTEGER), "posX"},
+	{MAKE_VAR(4,INTEGER), "posZ"},
+	{MAKE_VAR(5,INTEGER), "posY"},
+	{MAKE_VAR(6,INTEGER), "height"},
+	{MAKE_VAR(7,INTEGER), "radius"},
+	{MAKE_VAR(8,STRING_OFFSET), "looseTailMessage"},
+	{MAKE_VAR(9,MAP_VALUES), "actionFlag"},
+	{MAKE_VAR(10,INTEGER), "boatOffsetX"},
+	{MAKE_VAR(11,INTEGER), "boatOffsetZ"},
 };
