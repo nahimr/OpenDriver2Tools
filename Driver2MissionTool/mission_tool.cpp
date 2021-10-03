@@ -239,7 +239,7 @@ Stack ParseScript(xml_node<>* element, StringsStack* strings)
 		{
 			if (!instr) break;
 			// Fill thread instruction
-			std::pair<int, int> pair = functionsProp.at(instr->name());
+			const std::pair<int, int> pair = functionsProp.at(instr->name());
 			printf("%s\n", instr->name());
 			for (int j = 0; j < pair.first; j++)
 			{
@@ -255,6 +255,12 @@ Stack ParseScript(xml_node<>* element, StringsStack* strings)
 					args[j] = atoi(instr->first_attribute(buff)->value());
 				}
 				push(threads + index, args[j]);
+
+				if (!_stricmp(instr->name(), "IfProcessTarget"))
+				{
+					push(threads + index, -4);
+					push(threads + index, CMD_BranchIf);
+				}
 			}
 
 			push(threads + index, pair.second);

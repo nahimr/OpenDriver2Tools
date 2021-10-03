@@ -161,4 +161,5 @@ std::map <std::string, std::pair<int, int>> functionsProp =
 	{"SetTimerFlagCounter", {0, CMD_SetTimerFlagCounter}},
 	{"SetBombTimerFlag", {0, CMD_SetBombTimerFlag}},
 	{"UnSetTimerFlagCounter", {0, CMD_UnSetTimerFlagCounter}},
+	{"IfProcessTarget", {1, CMD_BranchIf}},
 };
