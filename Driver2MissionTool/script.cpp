@@ -56,7 +56,7 @@ u_int pop(Thread* thread)
 void print(Thread thread)
 {
     Operation* operations = thread.operations;
-    for (int i = 0; i < thread.offset; i++)
+    for (u_int i = 0; i < thread.offset; i++)
     {
         const u_int addr = (operations + i) - operations;
         printf("(%u): %u\n", addr, operations[i]);
@@ -66,7 +66,7 @@ void print(Thread thread)
 
 void printStack(const Stack stack)
 {
-    for (int i = 0; i < stack.nbOperations; i++)
+    for (u_int i = 0; i < stack.nbOperations; i++)
     {
         const u_int addr = (stack.operations + i) - stack.operations;
         printf("(%u): 0x%x\n", addr, stack.operations[i]);
@@ -75,7 +75,7 @@ void printStack(const Stack stack)
 
 void processStack(const Stack* stack)
 {
-    for (int i = 0; i < stack->nbOperations; i++)
+    for (u_int i = 0; i < stack->nbOperations; i++)
     {
         // Check if this is a thread call
         if (stack->operations[i] == CMD_StartThreadForPlayer || stack->operations[i] == CMD_StartThread2)

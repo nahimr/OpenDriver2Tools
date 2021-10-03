@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include <string>
 
-#define MAKE_VAR(pos, var) ((pos << 4) | var)
+#define MAKE_VAR(pos, var) ((pos << 8) | var)
 
 enum VALUE_TYPES
 {

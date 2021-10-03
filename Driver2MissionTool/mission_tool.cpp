@@ -126,10 +126,12 @@ void FillTarget(int* ptr,
 	xml_node<>* el, 
 	StringsStack* strings)
 {
+	int val = 0;
+	
 	for (std::pair<int, std::string> pair : list)
 	{
-		const int valueType = pair.first & 0x0f;
-		//int pos = (var & 0xff0) >> 4;
+		const int valueType = pair.first & 0xff;
+		//int pos = (var & 0xff00) >> 8;
 		xml_attribute<>* attr = el->first_attribute(pair.second.data());
 
 		if (!attr || SKIP == valueType)
@@ -139,7 +141,6 @@ void FillTarget(int* ptr,
 		}
 		printf("%p", ptr);
 		std::string value = attr->value() ? attr->value() : "";
-		int val = 0;
 
 		if (valueType == MAP_VALUES)
 		{
@@ -163,8 +164,9 @@ void FillTarget(int* ptr,
 
 MS_TARGET* ParseTargets(xml_node<>* element, StringsStack* strings)
 {
-	MS_TARGET* targets = static_cast<MS_TARGET*>(malloc(sizeof(MS_TARGET) * 16));
+	const auto targets = static_cast<MS_TARGET*>(malloc(sizeof(MS_TARGET) * 16));
 	assert(memset(targets, 0, sizeof(MS_TARGET) * 16) == targets);
+
 	xml_node<>* el = element->first_node();
 
 	// Parse Targets
@@ -172,7 +174,7 @@ MS_TARGET* ParseTargets(xml_node<>* element, StringsStack* strings)
 	{
 		std::string name = el->name();
 		printf("%s\n", name.data());
-		int* ptr = reinterpret_cast<int*>(targets + i);
+		const auto ptr = reinterpret_cast<int*>(targets + i);
 
 		if (name == "Car" || name == "Player2Start")
 		{
@@ -216,12 +218,11 @@ void ProcessBranchIf(xml_node<>* el, StringsStack* strings)
 	
 }
 
-
 Stack ParseScript(xml_node<>* element, StringsStack* strings)
 {
 	Stack stack;
 	initStack(&stack);
-	Thread* threads = static_cast<Thread*>(malloc(sizeof(Thread) * 16));
+	const auto threads = static_cast<Thread*>(malloc(sizeof(Thread) * 16));
 	for (int i = 0; i < 16; i++)
 	{
 		init(threads + i);
@@ -232,7 +233,7 @@ Stack ParseScript(xml_node<>* element, StringsStack* strings)
 	
 	do
 	{
-		size_t index = atoi(thread->first_attribute("id")->value());
+		const size_t index = atoi(thread->first_attribute("id")->value());
 		xml_node<>* instr = thread->first_node();
 		do
 		{
@@ -253,13 +254,13 @@ Stack ParseScript(xml_node<>* element, StringsStack* strings)
 				{
 					args[j] = atoi(instr->first_attribute(buff)->value());
 				}
-				push(&threads[index], args[j]);
+				push(threads + index, args[j]);
 			}
 
-			push(&threads[index], pair.second);
+			push(threads + index, pair.second);
 		} while ((instr = instr->next_sibling()));
 		
-		addThread(&stack, &threads[index]);
+		addThread(&stack, threads + index);
 	} while ((thread = thread->next_sibling("Thread")));
 
 	processStack(&stack);
@@ -268,9 +269,9 @@ Stack ParseScript(xml_node<>* element, StringsStack* strings)
 
 void CompileMission(const char* filename,
 	MS_MISSION settings, 
-	MS_TARGET targets[16], 
-	StringsStack strings, 
-	Stack stack)
+	MS_TARGET targets[16],
+	const StringsStack strings, 
+	const Stack stack)
 {
 	FILE* file;
 	if (fopen_s(&file, filename, "w"))
@@ -285,27 +286,26 @@ void CompileMission(const char* filename,
 
 	fwrite(stack.operations, sizeof(u_int), stack.nbOperations, file);
 
-	char unZero = 0;
+	char aZero = 0;
 
 	for (auto& pair : *strings.data)
 	{
 		auto str = std::get<std::string>(pair.second);
 		fwrite(str.data(), sizeof(char), str.size(), file);
-		fwrite(&unZero, sizeof(char), 1, file);
+		fwrite(&aZero, sizeof(char), 1, file);
 	}
 
 	fseek(file, 0, SEEK_END); // seek to end of file
 	const long sizeMFile = ftell(file); // get size of file
 
-	const int nearestPow = floor((int)(log(sizeMFile) / log(2))) + 1;
-	const int twoPowNear = pow(2, nearestPow);
-	const int fillSize = twoPowNear - sizeMFile;
+	const int nearestPow = static_cast<int>(floor(static_cast<int>(log(sizeMFile) / log(2)))) + 1;
+	const int twoPowNear = static_cast<int>(pow(2, nearestPow));
+	const size_t fillSize = twoPowNear - sizeMFile;
 
 	const char val = 0x21; // '!'
 	//Function to fill the end of the mission file
-	for (u_short j = 0; j < fillSize; j++) {
-
-		fwrite(&val, sizeof(char), 1, file);
+	for (size_t j = 0; j < fillSize; j++) {
+		fwrite(&val, 1, 1, file);
 	}
 
 	fclose(file);
@@ -352,7 +352,7 @@ int main(const int argc, char** argv)
 
 	for (int i = 0; i < argc; i++)
 	{
-		if (!stricmp(argv[i], "--compile") || !stricmp(argv[i], "-c"))
+		if (!_stricmp(argv[i], "--compile") || !_stricmp(argv[i], "-c"))
 		{
 			if (argc > 2)
 			{
