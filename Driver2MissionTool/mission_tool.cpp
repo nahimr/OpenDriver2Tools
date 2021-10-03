@@ -120,47 +120,74 @@ MS_MISSION ParseSettings(xml_node<>* el, StringsStack* strings)
 	return settings;
 }
 
+void FillTarget(int* ptr, 
+	std::map<int, std::string> list, 
+	xml_node<>* el, 
+	StringsStack* strings)
+{
+	for (std::pair<int, std::string> pair : list)
+	{
+		const int value_type = pair.first & 0x0f;
+		//int pos = (var & 0xff0) >> 4;
+		xml_attribute<>* attr = el->first_attribute(pair.second.data());
+
+		if (!attr || SKIP == value_type)
+		{
+			ptr++;
+			continue;
+		}
+		printf("%p", ptr);
+		std::string value = attr->value();
+		int val = 0;
+
+		if (value_type == MAP_VALUES)
+		{
+			val = mapValues(split(value, '|'));
+		}
+		else if (value_type == STRING_OFFSET)
+		{
+			val = strings->getOffset(value);
+		}
+		else if (value_type == INTEGER)
+		{
+			val = strtol(value.data(), nullptr, 0);
+		}
+
+		*ptr = val;
+
+		printf(", %d, %d, %s\n", *ptr, val, pair.second.data());
+		ptr++;
+	}
+}
+
 MS_TARGET* ParseTargets(xml_node<>* element, StringsStack* strings)
 {
 	MS_TARGET* targets = static_cast<MS_TARGET*>(malloc(sizeof(MS_TARGET) * 16));
-	memset(targets, 0, sizeof(MS_TARGET) * 16);
+	assert(memset(targets, -1, sizeof(MS_TARGET) * 16) == targets);
 	xml_node<>* el = element->first_node();
 
+	// Parse Targets
 	for (int i = 0; i < 16 && el; i++)
 	{
 		std::string name = el->name();
 		printf("%s\n", name.data());
-		// Parse Targets
+		int* ptr = (int*)(targets + i);
+
 		if (name == "Car" || name == "Player2Start")
 		{
-			targets[i].type = name == "Car" ? Target_Car : Target_Player2Start;
-			targets[i].target_flags = mapValues(split(el->first_attribute("targetFlags")->value(), '|'));
-			targets[i].display_flags = mapValues(split(el->first_attribute("displayFlags")->value(), '|'));
-			targets[i].car.posX = atoi(el->first_attribute("posX")->value());
-			targets[i].car.posZ = atoi(el->first_attribute("posZ")->value());
-			targets[i].car.rotation = atoi(el->first_attribute("rotation")->value());
-			targets[i].car.slot = atoi(el->first_attribute("slot")->value());
-			targets[i].car.model = atoi(el->first_attribute("carModel")->value());
-			targets[i].car.palette = atoi(el->first_attribute("carColour")->value());
-			targets[i].car.cutscene = atoi(el->first_attribute("cutscene")->value());
-			targets[i].car.flags = mapValues(split(el->first_attribute("flags")->value(), '|'));
-			targets[i].car.type = 0;
+			FillTarget(ptr, carTargetsProp, el, strings);
 
 			xml_node<>* nel = el;
 			if (nel->first_node("Chasing"))
 			{
 				nel = nel->first_node("Chasing");
-				targets[i].car.type = 2;
-				targets[i].car.chasing.tooFarMessage = strings->getOffset(nel->first_attribute("tooFarMessageStrId")->value());
-				targets[i].car.chasing.gettingFarMessage = strings->getOffset(nel->first_attribute("gettingFarMessageStrId")->value());
-				targets[i].car.chasing.maxDamage = atoi(nel->first_attribute("maxDamage")->value());
+
+				FillTarget(ptr, carChasingProp, nel, strings);
 			}
 			else if (nel->first_node("Tailing"))
 			{
 				nel = nel->first_node("Tailing");
-				targets[i].car.type = 1;
-				targets[i].car.tail.closeMessages = strings->getOffset(nel->first_attribute("closeMessageStrId")->value());
-				targets[i].car.tail.farMessages = strings->getOffset(nel->first_attribute("farMessageStrId")->value());
+				FillTarget(ptr, carTailingProp, nel, strings);
 			}
 		}
 		else if (name == "Point")

@@ -1,9 +1,23 @@
 #pragma once
 
 #include <map>
+#include <unordered_map>
 #include <string>
 
+#define MAKE_VAR(pos, var) ((pos << 4) | var)
+
+enum VALUE_TYPES
+{
+	INTEGER = 0,
+	MAP_VALUES,
+	STRING_OFFSET,
+	SKIP,
+};
+
 extern std::map<std::string, int> settingsFlags;
+extern std::map<int, std::string> carTargetsProp;
+extern std::map<int, std::string> carChasingProp;
+extern std::map<int, std::string> carTailingProp;
 
 #define MISSION_IDENT		(('D' << 24) | ('2' << 16) | ('M' << 8) | 'S' )
 

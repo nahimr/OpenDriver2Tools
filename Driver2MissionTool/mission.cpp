@@ -1,5 +1,6 @@
 #include "mission.hpp"
 
+
 std::map<std::string, int> settingsFlags =
 {
 	// City
@@ -91,4 +92,35 @@ std::map<std::string, int> settingsFlags =
 	
 	{"CARTARGET_FLAG_BACK_TO_PLAYERCAR", 0x400000},
 	{"CARTARGET_FLAG_SET_PLAYERCAR", 0x800000},
+};
+
+std::map<int, std::string> carTargetsProp =
+{
+	{MAKE_VAR(0,INTEGER), "type"},
+	{MAKE_VAR(1,MAP_VALUES), "targetFlags"},
+	{MAKE_VAR(2,MAP_VALUES), "displayFlags"},
+	{MAKE_VAR(3,INTEGER), "posX"},
+	{MAKE_VAR(4,INTEGER), "posZ"},
+	{MAKE_VAR(5,INTEGER), "rotation"},
+	{MAKE_VAR(6,INTEGER), "slot"},
+	{MAKE_VAR(7,INTEGER), "carModel"},
+	{MAKE_VAR(8,INTEGER), "carColour"},
+	{MAKE_VAR(9,SKIP), "carType"},
+	{MAKE_VAR(10,MAP_VALUES), "flags"},
+	{MAKE_VAR(11,INTEGER), "cutscene"},
+	{MAKE_VAR(12,INTEGER), "maxDistance"},
+
+};
+
+std::map<int, std::string> carChasingProp =
+{
+	{MAKE_VAR(0,INTEGER), "maxDamage"},
+	{MAKE_VAR(1,STRING_OFFSET), "tooFarMessage"},
+	{MAKE_VAR(2,STRING_OFFSET), "gettingFarMessage"},
+};
+
+std::map<int, std::string> carTailingProp =
+{
+	{MAKE_VAR(0,STRING_OFFSET), "closeMessage"},
+	{MAKE_VAR(1,STRING_OFFSET), "farMessage"},
 };
