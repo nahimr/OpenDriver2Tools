@@ -59,6 +59,7 @@ MS_MISSION ParseSettings(xml_node<>* el, StringsStack* strings)
 	MS_MISSION settings;
 	memset(&settings, 0, sizeof(MS_MISSION));
 
+	// TODO: Refactoring MS_MISSION
 	// Parse attributes	
 	settings.id = MISSION_IDENT;
 	settings.size = 0x84;
@@ -127,11 +128,11 @@ void FillTarget(int* ptr,
 {
 	for (std::pair<int, std::string> pair : list)
 	{
-		const int value_type = pair.first & 0x0f;
+		const int valueType = pair.first & 0x0f;
 		//int pos = (var & 0xff0) >> 4;
 		xml_attribute<>* attr = el->first_attribute(pair.second.data());
 
-		if (!attr || SKIP == value_type)
+		if (!attr || SKIP == valueType)
 		{
 			ptr++;
 			continue;
@@ -140,15 +141,15 @@ void FillTarget(int* ptr,
 		std::string value = attr->value() ? attr->value() : "";
 		int val = 0;
 
-		if (value_type == MAP_VALUES)
+		if (valueType == MAP_VALUES)
 		{
 			val = mapValues(split(value, '|'));
 		}
-		else if (value_type == STRING_OFFSET)
+		else if (valueType == STRING_OFFSET)
 		{
 			val = value.empty() ? -1 : strings->getOffset(value);
 		}
-		else if (value_type == INTEGER)
+		else if (valueType == INTEGER)
 		{
 			val = strtol(value.data(), nullptr, 0);
 		}
@@ -210,12 +211,57 @@ MS_TARGET* ParseTargets(xml_node<>* element, StringsStack* strings)
 	return targets;
 }
 
-Stack ParseScript(xml_node<>* element)
+void ProcessBranchIf(xml_node<>* el, StringsStack* strings)
+{
+	
+}
+
+Stack ParseScript(xml_node<>* element, StringsStack* strings)
 {
 	Stack stack;
+	initStack(&stack);
+	Thread* threads = static_cast<Thread*>(malloc(sizeof(Thread) * 16));
+	for (int i = 0; i < 16; i++)
+	{
+		init(threads + i);
+	}
+	int args[2] = { 0,0 };
+	xml_node<>* main = element->first_node("Main");
+	xml_node<>* thread = element->first_node("Thread");
+	
+	do
+	{
+		size_t index = atoi(thread->first_attribute("id")->value());
+		xml_node<>* instr = thread->first_node();
+		do
+		{
+			if (!instr) break;
+			// Fill thread instruction
+			std::pair<int, int> pair = functionsProp.at(instr->name());
+			printf("%s\n", instr->name());
+			for (int j = 0; j < pair.first; j++)
+			{
+				char buff[7];
+				sprintf_s(buff, 7, "arg%d", j);
+				if (!instr->first_attribute(buff)) continue;
+				if (!_stricmp(instr->name(), "ShowPlayerMessage") && j == 0)
+				{
+					args[j] = strings->getOffset(instr->first_attribute(buff)->value());
+				}
+				else
+				{
+					args[j] = atoi(instr->first_attribute(buff)->value());
+				}
+				push(&threads[index], args[j]);
+			}
 
-	
-	
+			push(&threads[index], pair.second);
+		} while ((instr = instr->next_sibling()));
+		
+		addThread(&stack, &threads[index]);
+	} while ((thread = thread->next_sibling("Thread")));
+
+	processStack(&stack);
 	return stack;
 }
 
@@ -231,7 +277,8 @@ void CreateMission(std::string &filename)
 	StringsStack* strings = ParseStrings(node = node->first_node());
 	MS_MISSION settings = ParseSettings(node = node->next_sibling(), strings);
 	MS_TARGET* targets = ParseTargets(node = node->next_sibling(), strings);
-	//Stack stack = ParseScript(node = node->next_sibling());
+	Stack stack = ParseScript(node = node->next_sibling(), strings);
+
 	
 	free(targets);
 }

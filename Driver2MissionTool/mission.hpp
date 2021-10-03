@@ -19,6 +19,7 @@ extern std::map<int, std::string> carTargetsProp;
 extern std::map<int, std::string> carChasingProp;
 extern std::map<int, std::string> carTailingProp;
 extern std::map<int, std::string> pointTargetsProp;
+extern std::map <std::string, std::pair<int, int>> functionsProp;
 
 #define MISSION_IDENT		(('D' << 24) | ('2' << 16) | ('M' << 8) | 'S' )
 

@@ -138,3 +138,27 @@ std::map<int, std::string> pointTargetsProp =
 	{MAKE_VAR(10,INTEGER), "boatOffsetX"},
 	{MAKE_VAR(11,INTEGER), "boatOffsetZ"},
 };
+
+std::map <std::string, std::pair<int, int>> functionsProp =
+{
+	{"PlayCutscene", {1, CMD_PlayCutscene}},
+	{"CompleteAllActiveTargets", {0, CMD_CompleteAllActiveTargets}},
+	{"SetVariable", {2, CMD_SetVariable}},
+	// {"Jump", {1, CMD_Jump}},
+	{"MultiCarEvent", {1, CMD_MultiCarEvent}},
+	{"SetPlayerFelony", {1, CMD_SetPlayerFelony}},
+	{"ShowPlayerMessage", {2, CMD_ShowPlayerMessage}},
+	{"TriggerEvent", {1, CMD_TriggerEvent}},
+	{"SetDoorsLocked", {1, CMD_SetDoorsLocked}},
+	{"ShowOutOfTimeMessage", {0, CMD_ShowOutOfTimeMessage}},
+	{"StopThread", {0, CMD_StopThread}},
+	{"StartThreadForPlayer", {1, CMD_StartThreadForPlayer}},
+	{"StartThread2", {1, CMD_StartThread2}},
+	{"SetCameraEvent", {1, CMD_SetCameraEvent}},
+	{"AwardPlayerCheat", {1, CMD_AwardPlayerCheat}},
+	{"SetRaining", {1, CMD_SetRaining}},
+	{"SetMissionComplete", {0, CMD_SetMissionComplete}},
+	{"SetTimerFlagCounter", {0, CMD_SetTimerFlagCounter}},
+	{"SetBombTimerFlag", {0, CMD_SetBombTimerFlag}},
+	{"UnSetTimerFlagCounter", {0, CMD_UnSetTimerFlagCounter}},
+};
