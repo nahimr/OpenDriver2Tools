@@ -164,7 +164,7 @@ void FillTarget(int* ptr,
 MS_TARGET* ParseTargets(xml_node<>* element, StringsStack* strings)
 {
 	MS_TARGET* targets = static_cast<MS_TARGET*>(malloc(sizeof(MS_TARGET) * 16));
-	assert(memset(targets, -1, sizeof(MS_TARGET) * 16) == targets);
+	assert(memset(targets, 0, sizeof(MS_TARGET) * 16) == targets);
 	xml_node<>* el = element->first_node();
 
 	// Parse Targets
@@ -216,6 +216,7 @@ void ProcessBranchIf(xml_node<>* el, StringsStack* strings)
 	
 }
 
+
 Stack ParseScript(xml_node<>* element, StringsStack* strings)
 {
 	Stack stack;
@@ -265,6 +266,51 @@ Stack ParseScript(xml_node<>* element, StringsStack* strings)
 	return stack;
 }
 
+void CompileMission(const char* filename,
+	MS_MISSION settings, 
+	MS_TARGET targets[16], 
+	StringsStack strings, 
+	Stack stack)
+{
+	FILE* file;
+	if (fopen_s(&file, filename, "w"))
+	{
+		fprintf(stderr, "Error when trying to open file!\n");
+		exit(EXIT_FAILURE);
+	}
+
+	settings.strings = stack.nbOperations;
+	fwrite(&settings, sizeof(settings), 1, file);
+	fwrite(targets, sizeof(MS_TARGET), 16, file);
+
+	fwrite(stack.operations, sizeof(u_int), stack.nbOperations, file);
+
+	char unZero = 0;
+
+	for (auto& pair : *strings.data)
+	{
+		auto str = std::get<std::string>(pair.second);
+		fwrite(str.data(), sizeof(char), str.size(), file);
+		fwrite(&unZero, sizeof(char), 1, file);
+	}
+
+	fseek(file, 0, SEEK_END); // seek to end of file
+	const long sizeMFile = ftell(file); // get size of file
+
+	const int nearestPow = floor((int)(log(sizeMFile) / log(2))) + 1;
+	const int twoPowNear = pow(2, nearestPow);
+	const int fillSize = twoPowNear - sizeMFile;
+
+	const char val = 0x21; // '!'
+	//Function to fill the end of the mission file
+	for (u_short j = 0; j < fillSize; j++) {
+
+		fwrite(&val, sizeof(char), 1, file);
+	}
+
+	fclose(file);
+}
+
 void CreateMission(std::string &filename)
 {
 	printf("File: %s\n", filename.data());
@@ -272,14 +318,16 @@ void CreateMission(std::string &filename)
 	xml_document<> document;
 	document.parse<0>(file.data());
 	xml_node<>* node = document.first_node();
-	int missionNumber = atoi(node->first_attribute("id")->value());
+	int missionNumber = strtol(node->first_attribute("id")->value(), nullptr, 0);
+	char missionFile[9];
+	sprintf_s(missionFile,9, "M%d.D2MS", missionNumber);
 
 	StringsStack* strings = ParseStrings(node = node->first_node());
 	MS_MISSION settings = ParseSettings(node = node->next_sibling(), strings);
 	MS_TARGET* targets = ParseTargets(node = node->next_sibling(), strings);
 	Stack stack = ParseScript(node = node->next_sibling(), strings);
 
-	
+	CompileMission(missionFile, settings, targets, *strings, stack);
 	free(targets);
 }
 

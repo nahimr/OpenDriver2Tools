@@ -17,5 +17,7 @@ public:
 	std::string getString(const std::string& key) const;
 
 	unsigned int getOffset(const std::string& key) const;
+
+	size_t getSize() const;
 };
 

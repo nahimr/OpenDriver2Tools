@@ -28,3 +28,8 @@ unsigned int StringsStack::getOffset(const std::string& key) const
 {
 	return std::get<unsigned int>(this->data->at(key));
 }
+
+size_t StringsStack::getSize() const
+{
+	return this->data->size();
+}
