@@ -131,7 +131,7 @@ void FillTarget(int* ptr,
 	for (std::pair<int, std::string> pair : list)
 	{
 		const int valueType = pair.first & 0xff;
-		//int pos = (var & 0xff00) >> 8;
+		// int pos = (pair.first & 0xff00) >> 8;
 		xml_attribute<>* attr = el->first_attribute(pair.second.data());
 
 		if (!attr || SKIP == valueType)
@@ -328,10 +328,10 @@ void CreateMission(std::string &filename)
 	char missionFile[9];
 	sprintf_s(missionFile,9, "M%d.D2MS", missionNumber);
 
-	StringsStack* strings = ParseStrings(node = node->first_node());
-	MS_MISSION settings = ParseSettings(node = node->next_sibling(), strings);
-	MS_TARGET* targets = ParseTargets(node = node->next_sibling(), strings);
-	Stack stack = ParseScript(node = node->next_sibling(), strings);
+	StringsStack* strings = ParseStrings(node = node->first_node("Strings"));
+	MS_MISSION settings = ParseSettings(node = node->next_sibling("Settings"), strings);
+	MS_TARGET* targets = ParseTargets(node = node->next_sibling("Targets"), strings);
+	Stack stack = ParseScript(node = node->next_sibling("Script"), strings);
 
 	CompileMission(missionFile, settings, targets, *strings, stack);
 	free(targets);
