@@ -26,7 +26,8 @@ $RECYCLE.BIN/
 .LSOverride
 
 # Icon must ends with two \r.
-Icon
+Icon
+
 
 # Thumbnails
 ._*
@@ -64,3 +65,4 @@ Driver2MissionTool/bin/*
 Driver2MissionTool/obj/*
 LEVELS/*
 *.args.json
+*.xml
