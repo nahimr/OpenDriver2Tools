@@ -141,6 +141,8 @@ std::map<int, std::string> pointTargetsProp =
 
 std::map <std::string, std::pair<int, int>> functionsProp =
 {
+	// OP_CMD_NAME, {NB_ARGS, OP_CMD}
+	{"Push", {1, NULL}},
 	{"PlayCutscene", {1, CMD_PlayCutscene}},
 	{"CompleteAllActiveTargets", {0, CMD_CompleteAllActiveTargets}},
 	{"SetVariable", {2, CMD_SetVariable}},

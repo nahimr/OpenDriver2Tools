@@ -20,4 +20,3 @@ public:
 
 	size_t getSize() const;
 };
-

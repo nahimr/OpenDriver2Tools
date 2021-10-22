@@ -118,6 +118,8 @@ MS_MISSION ParseSettings(xml_node<>* el, StringsStack* strings)
 		messages->first_node("DoorsLocked")->first_attribute("strId")->value()
 	);
 	
+	assert(sizeof(settings) == 0x84);
+
 	return settings;
 }
 
@@ -213,9 +215,45 @@ MS_TARGET* ParseTargets(xml_node<>* element, StringsStack* strings)
 	return targets;
 }
 
-void ProcessBranchIf(xml_node<>* el, StringsStack* strings)
+void ProcessThread(xml_node<>* element, 
+	Thread* thread, StringsStack* strings,
+	Stack* stack)
 {
-	
+	// TODO: Here we parse thread !!
+	const xml_node<>* instr = element->first_node();
+	unsigned int arg = 0;
+	do
+	{
+		// Here process instructions
+		if (!instr) break;
+		std::string op_name = instr->name();
+		const std::pair<int, int> tupple = functionsProp.at(op_name);
+
+		for (int i = 0; i < tupple.first; i++)
+		{
+			char attr_name[7];
+			sprintf_s(attr_name, 7, "arg%d", i);
+			const xml_attribute<>* argument = instr->first_attribute(attr_name);
+
+			if (op_name == "ShowPlayerMessage" && i == 0)
+			{
+				arg = strings->getOffset(argument->value());
+				push(thread, arg);
+				continue;
+			}
+
+			if (op_name == "Push")
+			{
+				arg = atoi(argument->value());
+				push(thread, arg);
+				continue;
+			}
+
+			push(thread, arg);
+		}
+
+		push(thread, tupple.second);
+	} while ((instr = instr->next_sibling()));
 }
 
 Stack ParseScript(xml_node<>* element, StringsStack* strings)
@@ -227,46 +265,20 @@ Stack ParseScript(xml_node<>* element, StringsStack* strings)
 	{
 		init(threads + i);
 	}
-	int args[2] = { 0,0 };
+
 	xml_node<>* main = element->first_node("Main");
 	xml_node<>* thread = element->first_node("Thread");
-	
+	unsigned int i = 1;
+
+	ProcessThread(main, threads, strings, &stack);
+	addThread(&stack, threads);
 	do
 	{
 		const size_t index = atoi(thread->first_attribute("id")->value());
-		xml_node<>* instr = thread->first_node();
-		do
-		{
-			if (!instr) break;
-			// Fill thread instruction
-			const std::pair<int, int> pair = functionsProp.at(instr->name());
-			printf("%s\n", instr->name());
-			for (int j = 0; j < pair.first; j++)
-			{
-				char buff[7];
-				sprintf_s(buff, 7, "arg%d", j);
-				if (!instr->first_attribute(buff)) continue;
-				if (!_stricmp(instr->name(), "ShowPlayerMessage") && j == 0)
-				{
-					args[j] = strings->getOffset(instr->first_attribute(buff)->value());
-				}
-				else
-				{
-					args[j] = atoi(instr->first_attribute(buff)->value());
-				}
-				push(threads + index, args[j]);
-
-				if (!_stricmp(instr->name(), "IfProcessTarget"))
-				{
-					push(threads + index, -4);
-					push(threads + index, CMD_BranchIf);
-				}
-			}
-
-			push(threads + index, pair.second);
-		} while ((instr = instr->next_sibling()));
+		ProcessThread(thread, threads + i, strings, &stack);
 		
 		addThread(&stack, threads + index);
+		i++;
 	} while ((thread = thread->next_sibling("Thread")));
 
 	processStack(&stack);
